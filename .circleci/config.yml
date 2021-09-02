@@ -291,22 +291,49 @@ jobs:
       - revert-migrations:
           workflow_id: ${CIRCLE_WORKFLOW_ID}   
           
-#   deploy-backend:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure  
+  deploy-backend:
+    docker:
+       - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            pip install awscli
+      - add_ssh_keys:
+          fingerprints:
+            - "7b:c5:fe:50:ca:cd:4d:fc:06:f1:b6:8b:c2:b2:45:72"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Set up env vars
+          command: |
+            echo ENVIRONMENT=production > backend/.env
+            echo NODE_ENV=production >> backend/.env
+            echo TYPEORM_CONNECTION=postgres >> backend/.env
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> backend/.env
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> backend/.env
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> backend.env
+            echo TYPEORM_HOST=${TYPEORM_HOST} >> backend/.env
+            echo TYPEORM_PORT=${TYPEORM_PORT} >> backend/.env
+            echo TYPEORM_USERNAME=${TYPEORM_USERNAME} >> backend/.env
+            echo TYPEORM_PASSWORD=${TYPEORM_PASSWORD} >> backend/.env
+            echo TYPEORM_DATABASE=${TYPEORM_DATABASE} >> backend/.env
+            cat backend/.env
+      - run:
+          name: Deploy backend
+          no_output_timeout: 35m
+          command: |
+            tar -czf backend.tar.gz ./backend
+            cd backend
+            ls -la
+            cat ~/inventory.txt
+            ansible-playbook -i ~/inventory.txt /root/project/.circleci/ansible/deploy-backend.yml
+      - destroy-environment:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
+      - revert-migrations:
+          workflow_id: ${CIRCLE_WORKFLOW_ID}
 
 #   smoke-test:
 #     docker:
@@ -387,8 +414,8 @@ workflows:
           requires: [configure-infrastructure]
       - deploy-frontend:
           requires: [run-migrations]
-      # - deploy-backend:
-      #     requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
       # - smoke-test:
       #     requires: [deploy-backend, deploy-frontend]
       # - cloudfront-update:
