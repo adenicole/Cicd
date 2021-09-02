@@ -1,36 +1,31 @@
 ---
-- name: "upgrade packages."
+- name: Move files to server
   become: true
-  apt:
-    upgrade: "yes"
+  unarchive:
+    src: /root/project/backend.tar.gz
+    dest: /home/ubuntu/app
     
 
-- name: "install dependencies."
+- name: Install
   become: true
-  apt:
-    name: ["nodejs", "npm", "tar"]
-    state: latest
-    update_cache: yes
-    
-
-- name: "copy backend folder"
-  become: true
-  copy:
-    src: /root/project/backend
-    dest: /home/ubuntu
-    
-
-- name: Install Node Dependencies
   shell: |
-    cd /home/ubuntu/backend
+    cd /home/ubuntu/app/backend
     npm install
     
-- name: Building backend service
-  shell: |
-    cd /home/ubuntu/backend
+- name: Build
+  become: true
+  shell: | 
+    cd /home/ubuntu/app/backend
     npm run build
     
-- name: Running backend service
+- name: Run Migrations
+  become: true
+  shell: | 
+    cd /home/ubuntu/app/backend
+    npm run migrations
+    
+- name: Start PM2
   shell: |
-    cd /home/ubuntu/backend    
-    pm2 start npm --no-automation --name "backend" -- run start
+    cd /home/ubuntu/app/backend
+    pm2 start npm -- run start
+  
