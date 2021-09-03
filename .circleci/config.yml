@@ -329,8 +329,8 @@ jobs:
           name: Deploy backend
           no_output_timeout: 35m
           command: |
-            cd backend
             tar -czf backend.tar.gz ./backend
+            cd backend
             echo "-----BEGIN RSA PRIVATE KEY-----" > $PWD/ssh_key_file.pem
             echo "${SSH_KEY}" >> $PWD/ssh_key_file.pem
             echo "-----END RSA PRIVATE KEY-----" >> $PWD/ssh_key_file.pem
