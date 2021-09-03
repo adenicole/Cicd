@@ -329,11 +329,14 @@ jobs:
           name: Deploy backend
           no_output_timeout: 35m
           command: |
-            tar -czf backend.tar.gz ./backend
             cd backend
-            ls -la
+            tar -czf backend.tar.gz ./backend
+            echo "-----BEGIN RSA PRIVATE KEY-----" > $PWD/ssh_key_file.pem
+            echo "${SSH_KEY}" >> $PWD/ssh_key_file.pem
+            echo "-----END RSA PRIVATE KEY-----" >> $PWD/ssh_key_file.pem
             cat ~/inventory.txt
-            ansible-playbook -i ~/inventory.txt /root/project/.circleci/ansible/deploy-backend.yml
+            ls -la
+            ansible-playbook -i ~/inventory.txt --private-key $PWD/ssh_key_file.pem /root/project/.circleci/ansible/deploy-backend.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
