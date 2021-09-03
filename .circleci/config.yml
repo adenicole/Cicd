@@ -205,6 +205,11 @@ jobs:
           name: Configure server
           no_output_timeout: 30m
           command: |
+            echo "-----BEGIN RSA PRIVATE KEY-----" > ~/ssh_key_file.pem
+            echo "${SSH_KEY}" >> ~/ssh_key_file.pem
+            echo "-----END RSA PRIVATE KEY-----" >> ~/ssh_key_file.pem
+            echo "\nansible_ssh_private_key_file=~/ssh_key_file.pem" >> ~/inventory.txt
+            cat ~/inventory.txt
             ansible-playbook -i ~/inventory.txt /root/project/.circleci/ansible/configure-server.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}      
