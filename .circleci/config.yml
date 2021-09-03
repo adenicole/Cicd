@@ -34,94 +34,94 @@ commands:
             fi
             
 jobs:
-  build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [frontend-build]
-      - run:
-          name: Build front-end
-          command: |
-            cd frontend
-            npm i
-            npm run build
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
+  # build-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [frontend-build]
+  #     - run:
+  #         name: Build front-end
+  #         command: |
+  #           cd frontend
+  #           npm i
+  #           npm run build
+  #     - save_cache:
+  #         paths: [frontend/node_modules]
+  #         key: frontend-build
 
-  build-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: Back-end build
-          command: |
-             cd backend
-             npm i
-             npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
+  # build-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     - run:
+  #         name: Back-end build
+  #         command: |
+  #           cd backend
+  #           npm i
+  #           npm run build
+  #     - save_cache:
+  #         paths: [backend/node_modules]
+  #         key: backend-build
 
-  test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-       - checkout
-       - restore_cache:
-          keys: [frontend-build]
-       - run:
-          name: Frontend-test
-          command: |
-            cd frontend
-            npm run test
-            pwd
+  # test-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [frontend-build]
+  #     - run:
+  #         name: Frontend-test
+  #         command: |
+  #           cd frontend
+  #           npm run test
+  #           pwd
                 
-  test-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: Backend-test
-          command: |
-            cd backend
-            npm run test
-            pwd
+  # test-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     - run:
+  #         name: Backend-test
+  #         command: |
+  #           cd backend
+  #           npm run test
+  #           pwd
             
-  scan-frontend:
-    docker:
-       - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [frontend-build]
-      - run:
-          name: Frontend-scan
-          command: |
-            cd ./frontend
-            npm install
-            npm audit fix --audit-level=critical
+  # scan-frontend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [frontend-build]
+  #     - run:
+  #         name: Frontend-scan
+  #         command: |
+  #           cd ./frontend
+  #           npm install
+  #           npm audit fix --audit-level=critical
 
-  scan-backend:
-    docker:
-       - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: Backend-scan
-          command: |
-            cd ./backend
-            npm audit fix --audit-level=critical 
+  # scan-backend:
+  #   docker:
+  #     - image: circleci/node:13.8.0
+  #   steps:
+  #     - checkout
+  #     - restore_cache:
+  #         keys: [backend-build]
+  #     - run:
+  #         name: Backend-scan
+  #         command: |
+  #           cd ./backend
+  #           npm audit fix --audit-level=critical 
 
   deploy-infrastructure:
     docker:
@@ -205,12 +205,11 @@ jobs:
           name: Configure server
           no_output_timeout: 30m
           command: |
-            echo "-----BEGIN RSA PRIVATE KEY-----" > $HOME/ssh_key_file.pem
-            echo "${SSH_KEY}" >> $HOME/ssh_key_file.pem
-            echo "-----END RSA PRIVATE KEY-----" >> $HOME/ssh_key_file.pem
-            echo -e "\nansible_ssh_private_key_file=$HOME/ssh_key_file.pem" >> ~/inventory.txt
+            echo "-----BEGIN RSA PRIVATE KEY-----" > $PWD/ssh_key_file.pem
+            echo "${SSH_KEY}" >> $PWD/ssh_key_file.pem
+            echo "-----END RSA PRIVATE KEY-----" >> $PWD/ssh_key_file.pem
             cat ~/inventory.txt
-            ansible-playbook -i ~/inventory.txt /root/project/.circleci/ansible/configure-server.yml
+            ansible-playbook -i ~/inventory.txt --private-key $PWD/ssh_key_file.pem /root/project/.circleci/ansible/configure-server.yml
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}      
 
