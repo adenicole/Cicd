@@ -11,7 +11,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID}"--recursive
+            aws s3 rb "s3://udapeople-${CIRCLE_WORKFLOW_ID}"--recursive
             aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-backend"
             aws cloudformation delete-stack --stack-name "adenicole-${CIRCLE_WORKFLOW_ID}-udapeople-stack-frontend"
   
@@ -372,6 +372,8 @@ jobs:
             else
             return 1
             fi
+            exit 1
+            
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID}
       - revert-migrations:
@@ -441,3 +443,4 @@ workflows:
       #     requires: [smoke-test]
       # - cleanup:
       #     requires: [cloudfront-update]
+      
