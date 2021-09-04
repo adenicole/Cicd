@@ -403,8 +403,7 @@ jobs:
             
             aws cloudformation deploy \
               --template-file .circleci/files/cloudfront.yml \
-              --stack-name adenicole-udapeople-stack \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}"
+              --stack-name adenicole-kk1j287dhjppmz123-udapeople-stack-cloudfront
       - persist_to_workspace:
           root: ~/
           paths:
